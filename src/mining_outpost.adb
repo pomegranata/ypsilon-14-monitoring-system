@@ -38,7 +38,10 @@ procedure Mining_Outpost is
    protected body Main_Terminal is
       procedure Oxygen_Level (Current_Oxygen_Level : Integer) is
       begin
-         if Current_Oxygen_Level in 1 .. 20 then
+         if Current_Oxygen_Level > 20 then
+            Put_Line ("Oxygen level: " & Integer'Image
+                        (Current_Oxygen_Level) & " %");
+         elsif Current_Oxygen_Level in 1 .. 20 then
             Put_Line ("Warning! Oxygen level is critically low: " &
                         Integer'Image (Current_Oxygen_Level) & "%");
          elsif Current_Oxygen_Level <= 0 then
@@ -50,7 +53,10 @@ procedure Mining_Outpost is
 
       procedure Temperature_Level (Current_Core_Temperature : Integer) is
       begin
-         if Current_Core_Temperature in 800 .. 999 then
+         if Current_Core_Temperature < 800 then
+            Put_Line ("Reactor temperature: " &
+                        Integer'Image (Current_Core_Temperature) & " Celcius");
+         elsif Current_Core_Temperature in 800 .. 999 then
             Put_Line ("Warning! Critical thermal temperature detected: " &
                         Integer'Image (Current_Core_Temperature) &
                         " Celsius.");
@@ -63,7 +69,10 @@ procedure Mining_Outpost is
 
       procedure Entity_Proximity (Current_Distance : Integer) is
       begin
-         if Current_Distance in 1 .. 29 then
+         if Current_Distance > 30 then
+            Put_Line ("Unidentified entity detected at: " &
+                        Integer'Image (Current_Distance) & " meters.");
+         elsif Current_Distance in 1 .. 29 then
             Put_Line ("Caution! Unidentified entity is approaching." &
                         " Current distance: " & Integer'Image
                               (Current_Distance) & " meters.");
@@ -73,21 +82,6 @@ procedure Mining_Outpost is
          end if;
       end Entity_Proximity;
    end Main_Terminal;
-
-   --  Declaration of the protected types for
-   --  Life_Support to monitor oxygen level
-
-   protected Life_Support is
-      procedure Oxygen_Level (Oxygen : Integer);
-   end Life_Support;
-   protected body Life_Support is
-      procedure Oxygen_Level (Oxygen : Integer) is
-      begin
-         if Oxygen > 20 then
-            Put_Line ("Oxygen level: " & Integer'Image (Oxygen) & "%");
-         end if;
-      end Oxygen_Level;
-   end Life_Support;
 
    --  Declaration for the task types, starting with "Breathing"
    --  to calculate the oxygen level and printing the
@@ -100,31 +94,12 @@ procedure Mining_Outpost is
    begin
       Oxygen_Spike.Reset (O2);
       while Current_Oxygen_Level > 0 loop
-         Life_Support.Oxygen_Level
-                        (Current_Oxygen_Level);
          Current_Oxygen_Level := Current_Oxygen_Level -
                                     Integer (Oxygen_Spike.Random (O2));
          Main_Terminal.Oxygen_Level (Current_Oxygen_Level);
          delay 2.0;
       end loop;
    end Breathing;
-
-   --  Declaration of the protected types for
-   --  Reactor_Status to monitor the reactor core temperature
-
-   protected Reactor_Status is
-      procedure Temperature_Level (Temperature : Integer);
-   end Reactor_Status;
-
-   protected body Reactor_Status is
-      procedure Temperature_Level (Temperature : Integer) is
-      begin
-         if Temperature < 800 then
-            Put_Line ("Reactor temperature: " &
-                        Integer'Image (Temperature) & " Celcius");
-         end if;
-      end Temperature_Level;
-   end Reactor_Status;
 
    --  Declaration for the task types, starting with "Reactor"
    --  to calculate the reactor core temperature and printing
@@ -138,8 +113,6 @@ procedure Mining_Outpost is
    begin
       Temperature_Spike.Reset (Fluctuation);
       while Current_Core_Temperature > 0 loop
-         Reactor_Status.Temperature_Level
-                           (Current_Core_Temperature);
          Current_Core_Temperature := Current_Core_Temperature + Integer
                                  (Temperature_Spike.Random (Fluctuation));
          Main_Terminal.Temperature_Level (Current_Core_Temperature);
@@ -147,23 +120,6 @@ procedure Mining_Outpost is
          delay 1.0;
       end loop;
    end Reactor;
-
-   --  Declaration of the protected types for Entity_Distance
-   --  to monitor the distance of the unidentified entity
-
-   protected Entity_Distance is
-      procedure Entity_Proximity (Distance : Integer);
-   end Entity_Distance;
-
-   protected body Entity_Distance is
-      procedure Entity_Proximity (Distance : Integer) is
-      begin
-         if Distance > 30 then
-            Put_Line ("Unidentified entity detected at: " &
-                        Integer'Image (Distance) & " meters.");
-         end if;
-      end Entity_Proximity;
-   end Entity_Distance;
 
    --  Declaration for the task types, starting with "Entity_Detection"
    --  to calculate the distance of the unidentified entity and printing
@@ -176,7 +132,6 @@ procedure Mining_Outpost is
    begin
       Unknown_Entity.Reset (Creature_Distance);
       while Current_Distance > 0 loop
-         Entity_Distance.Entity_Proximity (Current_Distance);
          Current_Distance := Current_Distance - Integer
                               (Unknown_Entity.Random (Creature_Distance));
          Main_Terminal.Entity_Proximity (Current_Distance);
